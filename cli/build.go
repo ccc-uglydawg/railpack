@@ -50,6 +50,10 @@ var BuildCommand = &cli.Command{
 			Name:  "cache-key",
 			Usage: "Unique id to prefix to cache keys",
 		},
+		&cli.StringFlag{
+			Name:  "cache-ref",
+			Usage: "Registry ref for remote BuildKit layer cache (e.g. registry.example.com/cache:latest)",
+		},
 		&cli.BoolFlag{
 			Name:   "dump-llb",
 			Hidden: true,
@@ -98,6 +102,7 @@ var BuildCommand = &cli.Command{
 			OutputDir:    cmd.String("output"),
 			ProgressMode: cmd.String("progress"),
 			CacheKey:     cmd.String("cache-key"),
+			CacheRef:     cmd.String("cache-ref"),
 			SecretsHash:  secretsHash,
 			Secrets:      env.Variables,
 			Platform:     platformStr,

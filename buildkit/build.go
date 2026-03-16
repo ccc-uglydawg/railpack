@@ -53,6 +53,7 @@ type BuildWithBuildkitClientOptions struct {
 	Platform     string
 	ImportCache  string
 	ExportCache  string
+	CacheRef     string
 	CacheKey     string
 	GitHubToken  string
 }
@@ -216,6 +217,23 @@ func BuildWithBuildkitClient(appDir string, plan *plan.BuildPlan, opts BuildWith
 		solveOpts.CacheExports = append(solveOpts.CacheExports, client.CacheOptionsEntry{
 			Type:  "gha",
 			Attrs: parseKeyValue(opts.ExportCache),
+		})
+	}
+
+	// Add registry cache import/export if specified
+	if opts.CacheRef != "" {
+		solveOpts.CacheImports = append(solveOpts.CacheImports, client.CacheOptionsEntry{
+			Type: "registry",
+			Attrs: map[string]string{
+				"ref": opts.CacheRef,
+			},
+		})
+		solveOpts.CacheExports = append(solveOpts.CacheExports, client.CacheOptionsEntry{
+			Type: "registry",
+			Attrs: map[string]string{
+				"ref":  opts.CacheRef,
+				"mode": "max",
+			},
 		})
 	}
 
