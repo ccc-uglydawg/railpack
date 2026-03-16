@@ -12,11 +12,13 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/containerd/platforms"
+	"github.com/docker/cli/cli/config"
 	"github.com/moby/buildkit/client"
 	_ "github.com/moby/buildkit/client/connhelper/dockercontainer"
 	_ "github.com/moby/buildkit/client/connhelper/nerdctlcontainer"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/session"
+	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
 	"github.com/moby/buildkit/util/appcontext"
 	_ "github.com/moby/buildkit/util/grpcutil/encoding/proto"
@@ -185,11 +187,16 @@ func BuildWithBuildkitClient(appDir string, plan *plan.BuildPlan, opts BuildWith
 	}
 	secrets := secretsprovider.FromMap(secretsMap)
 
+	// Attach Docker auth provider so BuildKit can authenticate to private
+	// registries for cache import/export (--cache-ref).
+	dockerCfg := config.LoadDefaultConfigFile(os.Stderr)
+	dockerAuth := authprovider.NewDockerAuthProvider(dockerCfg, nil)
+
 	solveOpts := client.SolveOpt{
 		LocalMounts: map[string]fsutil.FS{
 			"context": appFS,
 		},
-		Session: []session.Attachable{secrets},
+		Session: []session.Attachable{secrets, dockerAuth},
 		Exports: []client.ExportEntry{
 			{
 				Type: client.ExporterDocker,
