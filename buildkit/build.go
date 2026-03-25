@@ -22,6 +22,7 @@ import (
 	_ "github.com/moby/buildkit/util/grpcutil/encoding/proto"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/docker/cli/cli/config"
+	"github.com/docker/cli/cli/config/types"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/railwayapp/railpack/buildkit/cplnauth"
 	"github.com/railwayapp/railpack/core/plan"
@@ -194,7 +195,15 @@ func BuildWithBuildkitClient(appDir string, plan *plan.BuildPlan, opts BuildWith
 	// registries for cache import/export (--cache-ref).
 	dockerCfg := config.LoadDefaultConfigFile(os.Stderr)
 	var authAttachable session.Attachable
-	authAttachable = authprovider.NewDockerAuthProvider(authprovider.DockerAuthProviderConfig{ConfigFile: dockerCfg})
+	authAttachable = authprovider.NewDockerAuthProvider(authprovider.DockerAuthProviderConfig{
+		AuthConfigProvider: func(_ context.Context, host string, _ []string, _ authprovider.ExpireCachedAuthCheck) (types.AuthConfig, error) {
+			ac, err := dockerCfg.GetAuthConfig(host)
+			if err != nil {
+				return types.AuthConfig{}, err
+			}
+			return types.AuthConfig(ac), nil
+		},
+	})
 
 	// When --cache-auth-basic is set and --cache-ref targets a registry,
 	// wrap the auth provider to force client-side token fetching via Basic
