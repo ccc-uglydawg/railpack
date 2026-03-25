@@ -194,7 +194,7 @@ func BuildWithBuildkitClient(appDir string, plan *plan.BuildPlan, opts BuildWith
 	// registries for cache import/export (--cache-ref).
 	dockerCfg := config.LoadDefaultConfigFile(os.Stderr)
 	var authAttachable session.Attachable
-	authAttachable = authprovider.NewDockerAuthProvider(dockerCfg, nil)
+	authAttachable = authprovider.NewDockerAuthProvider(authprovider.DockerAuthProviderConfig{ConfigFile: dockerCfg})
 
 	// When --cache-auth-basic is set and --cache-ref targets a registry,
 	// wrap the auth provider to force client-side token fetching via Basic
