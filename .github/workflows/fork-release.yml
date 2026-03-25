@@ -21,6 +21,7 @@ jobs:
       - uses: jdx/mise-action@v2
       - name: Build CLI binary
         run: |
+          go mod tidy
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-s -w -X main.version=${{ github.event.inputs.tag }}" -o railpack ./cmd/cli
           tar czf railpack-${{ github.event.inputs.tag }}-x86_64-unknown-linux-musl.tar.gz railpack
           rm railpack
