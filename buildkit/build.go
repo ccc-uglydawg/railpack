@@ -257,9 +257,6 @@ func BuildWithBuildkitClient(appDir string, plan *plan.BuildPlan, opts BuildWith
 	// Add registry-based cache if --cache-ref is specified
 	if opts.CacheRef != "" {
 		cacheAttrs := map[string]string{"ref": opts.CacheRef}
-		if opts.CacheKey != "" {
-			cacheAttrs["ref"] = opts.CacheRef + ":" + opts.CacheKey
-		}
 		solveOpts.CacheImports = append(solveOpts.CacheImports, client.CacheOptionsEntry{
 			Type:  "registry",
 			Attrs: cacheAttrs,
